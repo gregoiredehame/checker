@@ -15,7 +15,7 @@
 -----------------------
  
  Installation guide:
- - Download checker repo, and past it into your maya system paths ''ex: C:\Users\<username>\Documents\maya\<version>\scripts\checker''
+ - Download checker repo, and past it into your maya system paths ```ex: C:\Users\<username>\Documents\maya\<version>\scripts\checker```
 ```py
 from checker import launcher
 launcher.tool_checker()
