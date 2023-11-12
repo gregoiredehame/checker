@@ -6,7 +6,7 @@
  Supported Maya Versions
 -----------------------
 
- kata supports two major versions of Maya:
+ checker supports two major versions of Maya:
 - 2022
 - 2023
      
