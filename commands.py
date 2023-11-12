@@ -57,7 +57,7 @@ class Scene():
         return references
         
     def references_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.references_get(verbose=None)
+        nodes = self.references_get(verbose=None, method=method)
         if nodes:
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
@@ -65,7 +65,7 @@ class Scene():
                     reference_file = cmds.referenceQuery(node, filename=True, withoutCopyNumber=True)
                     try: cmds.file(referenceNode=node, removeReference=True)
                     except: logger.info('- unable to remove "%s".'%node)
-        return self.references_get(verbose=None)  
+        return self.references_get(verbose=None, method=method)  
         
     # -------------    
     @tag('checked')    
@@ -80,13 +80,13 @@ class Scene():
         return namespaces
         
     def namespaces_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.namespaces_get(verbose=None)
+        nodes = self.namespaces_get(verbose=None, method=method)
         if nodes:
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix Namespaces: {node}"): return None
                     cmds.namespace(removeNamespace=node, mergeNamespaceWithRoot=True)
-        return self.namespaces_get(verbose=None)
+        return self.namespaces_get(verbose=None, method=method)
       
         
     # -------------     
@@ -102,7 +102,7 @@ class Scene():
         return unknown_nodes 
         
     def unknown_nodes_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.unknown_nodes_get(verbose=None)
+        nodes = self.unknown_nodes_get(verbose=None, method=method)
         if nodes:
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
@@ -111,7 +111,7 @@ class Scene():
                         cmds.lockNode(node, lock=False)
                         cmds.delete(node)
                     except: logger.info('- unable to remove "%s".'%node)  
-        return self.unknown_nodes_get(verbose=None)
+        return self.unknown_nodes_get(verbose=None, method=method)
      
         
     # ------------- 
@@ -127,14 +127,14 @@ class Scene():
         return unknown_plugins 
         
     def unknown_plugins_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.unknown_plugins_get(verbose=None)
+        nodes = self.unknown_plugins_get(verbose=None, method=method)
         if nodes:
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix Unknown Plugins: {node}"): return None
                     try: cmds.unknownPlugin(node, remove=True)
                     except: logger.info('- unable to remove "%s".'%node)
-        return self.unknown_plugins_get(verbose=None)
+        return self.unknown_plugins_get(verbose=None, method=method)
     
         
     # -------------     
@@ -153,7 +153,7 @@ class Scene():
         return unused_shaders
         
     def unused_shaders_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.unused_shaders_get(verbose=None)
+        nodes = self.unused_shaders_get(verbose=None, method=method)
         if nodes:
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
@@ -167,7 +167,7 @@ class Scene():
                         cmds.lockNode(node, lock=False)
                         cmds.delete(node)
                     except: logger.info('- unable to remove "%s".'%node) 
-        return self.unused_shaders_get(verbose=None)
+        return self.unused_shaders_get(verbose=None,  method=method)
     
     
     # -------------     
@@ -177,12 +177,12 @@ class Scene():
         return unused_nodes
         
     def unused_nodes_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.unused_nodes_get(verbose=None)
+        nodes = self.unused_nodes_get(verbose=None,  method=method)
         if nodes:
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix Unused Nodes: {node}"): return None
-        return self.unused_shaders_get(verbose=None)    
+        return self.unused_shaders_get(verbose=None,  method=method)    
         
         
     # -------------     
@@ -198,7 +198,7 @@ class Scene():
         return animation_layers 
         
     def animation_layers_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.animation_layers_get(verbose=None)
+        nodes = self.animation_layers_get(verbose=None,  method=method)
         if nodes:
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
@@ -207,7 +207,7 @@ class Scene():
                         cmds.lockNode(node, lock=False)
                         cmds.delete(node)
                     except: logger.info('- unable to remove "%s".'%layer)
-        return self.animation_layers_get(verbose=None)
+        return self.animation_layers_get(verbose=None,  method=method)
       
         
     # -------------    
@@ -223,7 +223,7 @@ class Scene():
         return display_layers 
         
     def display_layers_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.display_layers_get(verbose=None)
+        nodes = self.display_layers_get(verbose=None,  method=method)
         if nodes:
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
@@ -232,7 +232,7 @@ class Scene():
                         cmds.lockNode(node, lock=False)
                         cmds.delete(node)
                     except: logger.info('- unable to remove "%s".'%layer)
-        return self.display_layers_get(verbose=None)
+        return self.display_layers_get(verbose=None,  method=method)
     
         
     # -------------     
@@ -248,7 +248,7 @@ class Scene():
         return render_layers 
         
     def render_layers_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.render_layers_get(verbose=None)
+        nodes = self.render_layers_get(verbose=None,  method=method)
         if nodes:
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
@@ -257,7 +257,7 @@ class Scene():
                         cmds.lockNode(node, lock=False)
                         cmds.delete(node)
                     except: logger.info('- unable to remove "%s".'%layer)
-        return self.render_layers_get(verbose=None)
+        return self.render_layers_get(verbose=None,  method=method)
      
         
     # -------------     
@@ -269,12 +269,12 @@ class Scene():
     #    return sets
     #    
     #def sets_fix(self, verbose=None, method='scene') -> list:
-    #    for set in self.sets_get(verbose=None):
+    #    for set in self.sets_get(verbose=None,  method=method):
     #        try:
     #            cmds.lockNode(set, lock=False)
     #            cmds.delete(set)
     #        except: logger.info('- unable to remove "%s".'%set) 
-    #    return self.sets_get(verbose=None)
+    #    return self.sets_get(verbose=None,  method=method)
 
 
 class Objects():
@@ -494,31 +494,6 @@ class Objects():
         
     # -------------  
     @tag('checked')     
-    def shapes_names_get(self, verbose=None, method='scene') -> list:
-        uncorrect_names = []
-        nodes = utils.mesh_array(method)
-        if nodes:
-            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
-                for i, node in enumerate(nodes):
-                    if not prog.update(f"Get Shapes Names: {node}"): return None
-                    for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True, fullPath=True)):
-                        if ''.join(shape.rsplit('|')[-1]) != str(node) + 'Shape' and node not in uncorrect_names:
-                            uncorrect_names.append(shape)
-        return uncorrect_names                
-        
-    def shapes_names_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.shapes_names_get(verbose=None, method=method)
-        if nodes:
-            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
-                for i, node in enumerate(nodes):
-                    if not prog.update(f"Fix Shapes Names: {node}"): return None
-                    parent = cmds.listRelatives(node, parent=True)[0]
-                    cmds.rename(node, f"{parent}Shape")
-        return self.shapes_names_get(verbose=None, method=method)
-        
-        
-    # -------------  
-    @tag('checked')     
     def extra_shapes_get(self, verbose=None, method='scene') -> list:
         extra_shapes = []
         nodes = utils.mesh_array(method)
@@ -565,6 +540,31 @@ class Objects():
                     try: cmds.delete(node)
                     except:logger.info('- unable to remove "%s".'%node) 
         return self.extra_shapes_get(verbose=None, method=method)
+            
+        
+    # -------------  
+    @tag('checked')     
+    def shapes_names_get(self, verbose=None, method='scene') -> list:
+        uncorrect_names = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Shapes Names: {node}"): return None
+                    for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True, fullPath=True)):
+                        if ''.join(shape.rsplit('|')[-1]) != str(node) + 'Shape' and node not in uncorrect_names:
+                            uncorrect_names.append(shape)
+        return uncorrect_names                
+        
+    def shapes_names_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.shapes_names_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Shapes Names: {node}"): return None
+                    parent = cmds.listRelatives(node, parent=True)[0]
+                    cmds.rename(node, f"{parent}Shape")
+        return self.shapes_names_get(verbose=None, method=method)
         
         
     # -------------  
@@ -928,8 +928,7 @@ class Topology():
         return open_edges
     
     
-    # -------------  
-    @tag('checked')        
+    # -------------      
     def poles_get(self, verbose=None, method='scene') -> list:
         poles = []
         selIt = om2.MItSelectionList(utils.list_as_MSelectionList(utils.mesh_array(method)))
@@ -1120,29 +1119,66 @@ class Options():
     
     # -------------  
     def assigned_lambert_get(self, verbose=None, method='scene') -> list:
-        print('assigned_lambert_get')
-        return []
+        non_lambert = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Assigned Shader: {node}"): return None
+                    dag = om2.MGlobal.getSelectionListByName(node).getDagPath(0)
+                    mfn = om2.MFnMesh(dag.extendToShape())
+                    if mfn.getConnectedShaders(0):
+                        is_lambert = True
+                        for engine in mfn.getConnectedShaders(0)[0]:
+                            if engine.apiType() == om2.MFn.kShadingEngine:
+                                if om2.MFnDependencyNode(engine).name() != 'initialShadingGroup':
+                                    is_lambert = None
+                        if not is_lambert: non_lambert.append(node)
+        return non_lambert
         
     def assigned_lambert_fix(self, verbose=None, method='scene') -> list:
-        print('assigned_lambert_fix') 
-        return []
+        nodes = self.assigned_lambert_get(verbose=None,  method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Assigned Shaders: {node}"): return None
+                    cmds.sets(f'{node}', edit=True, forceElement='initialShadingGroup')
+        return self.assigned_lambert_get(verbose=None,  method=method)  
         
         
-    # -------------  
-    def assigned_rest_attribute_get(self, verbose=None, method='scene') -> list:
-        print('assigned_rest_attribute_get')
-        return []
-        
-    def assigned_rest_attribute_fix(self, verbose=None, method='scene') -> list:
-        print('assigned_rest_attribute_fix') 
-        return []
-        
-        
+    @tag('checked')    
     # -------------  
     def assigned_faces_shaders_get(self, verbose=None, method='scene') -> list:
-        print('assigned_faces_shaders_get')
-        return []
+        non_assigned_faces_shaders = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Unassigned Faces: {node}"): return None
+                    dag = om2.MGlobal.getSelectionListByName(node).getDagPath(0)
+                    mfn = om2.MFnMesh(dag.extendToShape())
+                    for shader in mfn.getConnectedShaders(0)[0]:
+                        for child in str(om2.MFnSet(shader).getMembers(1).getSelectionStrings()).replace("(","").replace(")","").replace("'","").replace(",","").rsplit(" "):
+                            if child not in ['shaderBallGeomShape1']:
+                                if not child.count('.f[') and node not in non_assigned_faces_shaders: non_assigned_faces_shaders.append(node)
+        return non_assigned_faces_shaders
         
     def assigned_faces_shaders_fix(self, verbose=None, method='scene') -> list:
-        print('assigned_faces_shaders_fix')
-        return []
+        nodes = self.assigned_faces_shaders_get(verbose=None,  method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Unassigned Faces: {node}"): return None
+                    dag = om2.MGlobal.getSelectionListByName(node).getDagPath(0)
+                    mfn = om2.MFnMesh(dag.extendToShape())
+                    for shader in mfn.getConnectedShaders(0)[0]:
+                        if shader.apiType() == om2.MFn.kShadingEngine:
+                            childs = om2.MFnSet(shader).getMembers(1)
+                            new_childs = om2.MSelectionList()
+                            for child in str(childs.getSelectionStrings()).replace("(","").replace(")","").replace("'","").replace(",","").rsplit(" "):
+                                if child not in ['shaderBallGeomShape1']: 
+                                    for face in utils.noneAsList(cmds.polyListComponentConversion(child, toFace=True)): new_childs.add(face)
+
+                            om2.MFnSet(shader).removeMembers(childs)    
+                            om2.MFnSet(shader).addMembers(new_childs)
+        return self.assigned_faces_shaders_get(verbose=None,  method=method)              
