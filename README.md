@@ -15,10 +15,10 @@
 -----------------------
  
  Installation guide:
- - Download kata repo, and past it into your maya system paths ( ex: scripts folder )
+ - Download chcker repo, and past it into your maya system paths ( ex: C:\Users\<username>\Documents\maya\<version>\scripts\checker )
 ```py
 from checker import launcher
 launcher.tool_checker()
 ```
 
-chcker is developed and maintained by Gregoire Dehame.
+checker is developed and maintained by Gregoire Dehame.
