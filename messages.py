@@ -1,3 +1,13 @@
+"""
+CHECKER. (c)
+
+Author:  Gregoire Dehame
+Created: Oct 27, 2023
+Module:  checker.messagess
+Purpose: pyside2 message box file.
+Execute: from checker import messages; messages.FUNCTION()
+"""
+
 import os
 from PySide2 import QtWidgets, QtGui, QtCore
 from PySide2.QtGui import QIcon

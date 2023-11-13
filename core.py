@@ -1,5 +1,5 @@
 """
-KATA. (c)
+CHECKER. (c)
 
 Author:  Gregoire Dehame
 Created: Oct 27, 2023
@@ -20,9 +20,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 from . import utils, commands, printter, highlighter
-from imp import reload
-reload(commands)
-reload(utils)
 
 class CheckerManager(MayaQWidgetDockableMixin, QtWidgets.QWidget):
     """ project manager interface class.

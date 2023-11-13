@@ -1,5 +1,5 @@
 """
-KATA. (c)
+CHECKER. (c)
 
 Author:  Gregoire Dehame
 Created: Oct 27, 2023
@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 from . import utils, progress
-
 
 class Tagger(object):
     def __init__(self):

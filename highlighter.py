@@ -1,5 +1,5 @@
 """
-KATA. (c)
+CHECKER. (c)
 
 Author:  Gregoire Dehame
 Created: Oct 27, 2023

@@ -1,5 +1,5 @@
 """
-KATA. (c)
+CHECKER. (c)
 
 Author:  Gregoire Dehame
 Created: Oct 27, 2023
@@ -9,8 +9,6 @@ Execute: from checker import launcher; launcher.tool_checker()
 """
 
 from . import core, utils
-from imp import reload
-reload(core)
 
 def tool_checker(area=None):
     """ function that will delete existing tool_checker interface, and will launch new one.
