@@ -62,9 +62,13 @@ class Scene():
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix References: {node}"): return None
-                    reference_file = cmds.referenceQuery(node, filename=True, withoutCopyNumber=True)
-                    try: cmds.file(referenceNode=node, removeReference=True)
-                    except: logger.info('- unable to remove "%s".'%node)
+                    try: cmds.lockNode(node, lock=False)
+                    except: pass
+                    try: 
+                        cmds.file(referenceNode=node, removeReference=True)
+                    except: 
+                        try: cmds.delete(node)
+                        except: logger.info('- unable to remove "%s".'%node)
         return self.references_get(verbose=None, method=method)  
         
     # -------------    
@@ -85,7 +89,10 @@ class Scene():
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix Namespaces: {node}"): return None
-                    cmds.namespace(removeNamespace=node, mergeNamespaceWithRoot=True)
+                    try: cmds.lockNode(node, lock=False)
+                    except: pass
+                    try: cmds.namespace(removeNamespace=node, mergeNamespaceWithRoot=True)
+                    except: logger.info(f'- skipping. unable to remove "{node}".')
         return self.namespaces_get(verbose=None, method=method)
       
         
