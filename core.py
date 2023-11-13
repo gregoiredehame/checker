@@ -480,7 +480,7 @@ class CheckerManager(MayaQWidgetDockableMixin, QtWidgets.QWidget):
     
     
     def query_method(self):
-        if   self.method_1.isChecked(): return 'selected'
+        if   self.method_1.isChecked(): return 'selection'
         elif self.method_2.isChecked(): return 'topnode'
         elif self.method_3.isChecked(): return 'scene'
         

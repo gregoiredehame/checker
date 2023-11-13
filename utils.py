@@ -126,6 +126,7 @@ def mesh_array(method='scene'):
         if cmds.ls(sl=1):
             for transform in noneAsList(cmds.listRelatives(cmds.ls(sl=1)[0], allDescendents=True)):
                 if is_mesh(transform) and cmds.nodeType(transform) == 'transform':  array.append(transform)
+            if is_mesh(cmds.ls(sl=1)[0]) and cmds.nodeType(cmds.ls(sl=1)[0]) == 'transform':  array.append(cmds.ls(sl=1)[0])    
     return array    
     
 def transform_array(method='scene'):
@@ -140,6 +141,7 @@ def transform_array(method='scene'):
         if cmds.ls(sl=1):
             for transform in noneAsList(cmds.listRelatives(cmds.ls(sl=1)[0], allDescendents=True)):
                 if is_transform(transform) and cmds.nodeType(transform) == 'transform':  array.append(transform)
+            if is_transform(cmds.ls(sl=1)[0]) and cmds.nodeType(cmds.ls(sl=1)[0]) == 'transform':  array.append(cmds.ls(sl=1)[0])    
     return array           
     
 def list_as_MSelectionList(list=None):

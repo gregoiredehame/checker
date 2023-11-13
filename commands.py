@@ -11,6 +11,7 @@ Execute: from checker import utils; utils.FUNCTION()
 try:
     import maya.cmds as cmds
     import maya.api.OpenMaya as om2
+    import maya.mel as mel
 except: pass    
     
 import sys
@@ -1067,7 +1068,6 @@ class UV():
         
         
     # -------------  
-    @tag('checked')
     def flipped_uv_faces_get(self, verbose=None, method='scene') -> list:
         flipped_uv_faces = []
         selIt = om2.MItSelectionList(utils.list_as_MSelectionList(utils.mesh_array(method)))
@@ -1099,16 +1099,44 @@ class UV():
         
         
     # -------------  
-    @tag('checked')     
     def overlapping_uv_faces_get(self, verbose=None, method='scene') -> list:
-        print('overlapping_uv_faces_get')
-        return []
+        overlapping_uv_faces = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Overlapping UV Faces: {node}"): return None
+                    shapes = cmds.listRelatives(node, shapes=True)
+                    if shapes:
+                        overlapping_uv_faces.extend(utils.noneAsList(cmds.polyUVOverlap("{}.f[*]".format(shapes[0]), overlappingComponents=True)))
+        return overlapping_uv_faces
         
         
     # -------------  
     def overlapping_uv_meshs_get(self, verbose=None, method='scene') -> list:
-        print('overlapping_uv_meshs_get')
-        return []
+        overlapping_uv_meshs = []
+        nodes = utils.mesh_array(method)
+        data = {}
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Meshs Per Shaders: {node}"): return None
+                    dag = om2.MGlobal.getSelectionListByName(node).getDagPath(0)
+                    mfn = om2.MFnMesh(dag.extendToShape())
+                    for shader in mfn.getConnectedShaders(0)[0]:
+                        shader_name = om2.MFnDependencyNode(shader).name()
+                        
+                        if shader_name not in list(data.keys()):
+                            data[shader_name] = []
+                        for child in str(om2.MFnSet(shader).getMembers(1).getSelectionStrings()).replace("(","").replace(")","").replace("'","").replace(",","").rsplit(" "):
+                            data[shader_name].extend(cmds.polyListComponentConversion(child, toFace=True))
+        if data:
+            with progress.ProgressWindow(len(list(data.keys())), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(list(data.keys())):
+                    if not prog.update(f"Get Overlapping UV Meshs: {node}"): return None
+                    overlapping_uv_meshs.extend(utils.noneAsList(cmds.polyUVOverlap(data[node], overlappingComponents=True)))
+                    
+        return overlapping_uv_meshs
         
 
      
