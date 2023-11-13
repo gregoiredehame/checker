@@ -386,6 +386,36 @@ class Objects():
                     [cmds.setAttr(f"{node}.{attr}", lock=False) for attr in ['tx','ty','tz','rx','ry','rz','sx','sy','sz']]
                     cmds.makeIdentity(f"{node}", apply=True, translate=True, rotate=True, scale=True, normal=False)   
         return self.freeze_transformations_get(verbose=None, method=method)
+    
+    
+    # -------------  
+    @tag('checked')   
+    # -------------           
+    def locked_transformations_get(self, verbose=None, method='scene') -> list:
+        locked_transforms = []
+        nodes = utils.mesh_array(method) + utils.transform_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Locked Transformations: {node}"): return None
+                    for attribute in ['translateX','translateY','translateZ','rotateX','rotateY','rotateZ','visibility']:
+                        if cmds.getAttr(f'{node}.{attribute}', lock=True)       == True  and node not in locked_transforms: locked_transforms.append(node)
+                        if cmds.getAttr(f'{node}.{attribute}', keyable=True)    == False and node not in locked_transforms: locked_transforms.append(node)
+        return locked_transforms
+        
+    def locked_transformations_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.locked_transformations_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Locked Transformations: {node}"): return None
+                    for attribute in ['translateX','translateY','translateZ','rotateX','rotateY','rotateZ','visibility']:
+                        try:
+                            cmds.setAttr(f'{node}.{attribute}', lock=False)
+                            cmds.setAttr(f'{node}.{attribute}', channelBox=True)
+                            cmds.setAttr(f'{node}.{attribute}', keyable=True)
+                        except: logger.info(f'- unable to edit {node}.{attribute} status.')    
+        return self.locked_transformations_get(verbose=None, method=method)    
         
         
     # -------------  
@@ -786,7 +816,37 @@ class Objects():
                     if not prog.update(f"Fix Smoothed Meshs: {node}"): return None
                     for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True)):
                         cmds.setAttr(f"{shape}.displaySmoothMesh", 0)
-        return self.smooth_mesh_preview_get(verbose=None, method=method)    
+        return self.smooth_mesh_preview_get(verbose=None, method=method)
+    
+    
+    # -------------
+    @tag('checked')     
+    def floating_rock_model_tag_get(self, verbose=None, method='scene') -> list:
+        is_not_tagged = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Tagged Meshs: {node}"): return None
+                    for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True)):
+                        if not cmds.attributeQuery('mdl_path', node=shape, exists=True) and node not in is_not_tagged:
+                            is_not_tagged.append(node)
+        return is_not_tagged
+        
+    def floating_rock_model_tag_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.floating_rock_model_tag_get(verbose=None, method=method)
+        if nodes:
+            try:
+                sys.path.append('X:/Tools/Scripts/Maya/Scripts/frModel/')
+                import fr_tag_geo_for_USD.main
+                with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                    for i, node in enumerate(nodes):
+                        if not prog.update(f"Fix Tagged Meshs: {node}"): return None
+                        fr_tag_geo_for_USD.main.fr_tag_geo_for_USD(utils.noneAsList(cmds.listRelatives(node, shapes=True)))
+            except Exception as e:
+                logger.warning(f'- unable to fix the floating rock meshs tags. {e}')
+                
+        return self.floating_rock_model_tag_get(verbose=None, method=method)        
     
         
 class Topology():
@@ -1038,6 +1098,30 @@ class UV():
         
         
     # -------------  
+    @tag('checked')        
+    def non_manifolds_uvs_get(self, verbose=None, method='scene') -> list:
+        non_manifolds_uvs = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Non Manifolds Uvs: {node}"): return None
+                    invalid = cmds.polyInfo(node, nonManifoldUVs=True)
+                    if invalid: non_manifolds_uvs.extend(cmds.ls(invalid, flatten=True))
+        return non_manifolds_uvs   
+        
+    def non_manifolds_uvs_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.non_manifolds_uvs_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Non Manifolds Uvs: {node}"): return None
+                    try: cmds.polyClean(node, cleanUVs=True, constructionHistory=False)
+                    except: pass
+        return self.non_manifolds_uvs_get(verbose=None, method=method)
+            
+            
+    # -------------  
     @tag('checked')     
     def negative_uv_get(self, verbose=None, method='scene') -> list:
         negative_uv = []
@@ -1194,7 +1278,7 @@ class UV():
         
 
      
-class Options():
+class Shaders():
     def __init__(self):
         pass
     
@@ -1263,4 +1347,29 @@ class Options():
 
                             om2.MFnSet(shader).removeMembers(childs)    
                             om2.MFnSet(shader).addMembers(new_childs)
-        return self.assigned_faces_shaders_get(verbose=None,  method=method)              
+        return self.assigned_faces_shaders_get(verbose=None,  method=method) 
+    
+    
+    @tag('checked')    
+    # -------------  
+    def non_shaders_assigned_get(self, verbose=None, method='scene') -> list:
+        non_shaders = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Unassigned Meshs: {node}"): return None
+                    dag = om2.MGlobal.getSelectionListByName(node).getDagPath(0)
+                    mfn = om2.MFnMesh(dag.extendToShape())
+                    if len(mfn.getConnectedShaders(0)[0]) == 0:
+                        non_shaders.append(node)
+        return non_shaders
+    
+    def non_shaders_assigned_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.non_shaders_assigned_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Non Shader Assigned Meshs: {node}"): return None
+                    cmds.sets(f'{node}', edit=True, forceElement='initialShadingGroup')
+        return self.non_shaders_assigned_get(verbose=None, method=method)    
