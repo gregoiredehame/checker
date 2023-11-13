@@ -666,12 +666,14 @@ class Objects():
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Get Constraints: {node}"): return None
-                    for attribute in utils.noneAsList([attr.split('.')[-1] for attr in cmds.listAnimatable(node)]):
-                        try:
-                            for connection in utils.noneAsList(cmds.listConnections(f"{node}.{attribute}", s=1)):
-                                if cmds.nodeType(connection) in constraints_nodes and connection not in constraints:
-                                    constraints.append(connection)
-                        except: pass            
+                    try:
+                        for attribute in utils.noneAsList([attr.split('.')[-1] for attr in cmds.listAnimatable(node)]):
+                            try:
+                                for connection in utils.noneAsList(cmds.listConnections(f"{node}.{attribute}", s=1)):
+                                    if cmds.nodeType(connection) in constraints_nodes and connection not in constraints:
+                                        constraints.append(connection)
+                            except: pass    
+                    except: pass
         return constraints
         
     def constraints_fix(self, verbose=None, method='scene') -> list:
@@ -730,12 +732,14 @@ class Objects():
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Get Animation Curves: {node}"): return None
-                    for attribute in utils.noneAsList([attr.split('.')[-1] for attr in cmds.listAnimatable(node)]):
-                        try:
-                            for connection in utils.noneAsList(cmds.listConnections(f"{node}.{attribute}", s=1)):
-                                if cmds.nodeType(connection) in animation_curves_nodes and connection not in animation_curves:
-                                    animation_curves.append(connection)
-                        except: pass            
+                    try:
+                        for attribute in utils.noneAsList([attr.split('.')[-1] for attr in cmds.listAnimatable(node)]):
+                            try:
+                                for connection in utils.noneAsList(cmds.listConnections(f"{node}.{attribute}", s=1)):
+                                    if cmds.nodeType(connection) in animation_curves_nodes and connection not in animation_curves:
+                                        animation_curves.append(connection)
+                            except: pass            
+                    except: pass
         return animation_curves
         
     def animation_curves_fix(self, verbose=None, method='scene') -> list:
