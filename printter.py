@@ -13,7 +13,6 @@ import inspect
 
 GREY = QtGui.QColor(43, 43, 43)
 
-
 class LineNumberArea(QtWidgets.QWidget):
     def __init__(self, editor):
         super(LineNumberArea, self).__init__(editor)

@@ -10,7 +10,6 @@ Execute: from checker import highlighter; highlighter.FUNCTION()
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
-
 def format(color, style=''):
     """
     Return a QTextCharFormat with the given attributes.

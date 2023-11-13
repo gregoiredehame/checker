@@ -956,7 +956,55 @@ class Topology():
                     starlikes.append(f"{selIt.getDagPath().fullPathName()}.f[{polyIt.index()}]")
                 polyIt.next()
             selIt.next()
-        return starlikes     
+        return starlikes 
+    
+    # -------------  
+    @tag('checked')        
+    def invalid_edges_get(self, verbose=None, method='scene') -> list:
+        invalid_edges = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Invalid Edges: {node}"): return None
+                    invalid = cmds.polyInfo(node, invalidEdges=True)
+                    if invalid:
+                        invalid_edges.extend(cmds.ls(invalid, flatten=True))
+        return invalid_edges     
+    
+    def invalid_edges_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.invalid_edges_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Invalid Edges: {node}"): return None
+                    try: cmds.polyClean(node, cleanEdges=True, constructionHistory=False)
+                    except: pass
+        return self.invalid_edges_get(verbose=None, method=method)  
+    
+    
+    # -------------  
+    @tag('checked')        
+    def invalid_vertices_get(self, verbose=None, method='scene') -> list:
+        invalid_vertices = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Invalid Vertices: {node}"): return None
+                    invalid = cmds.polyInfo(node, invalidVertices=True)
+                    if invalid: invalid_vertices.extend(cmds.ls(invalid, flatten=True))
+        return invalid_vertices   
+        
+    def invalid_vertices_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.invalid_vertices_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Invalid Vertices: {node}"): return None
+                    try: cmds.polyClean(node, cleanVertices=True, constructionHistory=False)
+                    except: pass
+        return self.invalid_vertices_get(verbose=None, method=method)                   
                
      
 class UV():
