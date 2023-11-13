@@ -27,7 +27,7 @@ class CheckerManager(MayaQWidgetDockableMixin, QtWidgets.QWidget):
                 //
     """
     title = "Model Checker"
-    version = "0.0.1"
+    version = 0.1
     studio = 'Floating Rock'
     
     def __init__(self, parent=None):
@@ -40,8 +40,8 @@ class CheckerManager(MayaQWidgetDockableMixin, QtWidgets.QWidget):
         self.all_fix_actions = {}
         
         self.icons = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icons')
-        self.setObjectName(CheckerManager.title)
-        self.setWindowTitle(CheckerManager.title)
+        self.setObjectName(f"{CheckerManager.title}")
+        self.setWindowTitle(f"{CheckerManager.title} {CheckerManager.version}")
         self.main_layout = QtWidgets.QVBoxLayout(self)
         self.main_layout.setContentsMargins(-10, -10, -10, -10)
         
