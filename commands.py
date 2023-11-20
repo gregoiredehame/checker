@@ -812,12 +812,12 @@ class Objects():
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Get Smoothed Meshs: {node}"): return None
-                    for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True, fullPath=True)):
-                        if cmds.getAttr(f"{shape}.displaySmoothMesh")         != 0 and node not in is_smoothed: is_smoothed.append(node)
-                        if cmds.getAttr(f"{shape}.displaySubdComps")          != 1 and node not in is_smoothed: is_smoothed.append(node)
-                        if cmds.getAttr(f"{shape}.smoothLevel")               != 1 and node not in is_smoothed: is_smoothed.append(node)
-                        if cmds.getAttr(f"{shape}.useSmoothPreviewForRender") != 1 and node not in is_smoothed: is_smoothed.append(node)
-                        if cmds.getAttr(f"{shape}.renderSmoothLevel")         != 1 and node not in is_smoothed: is_smoothed.append(node)
+                    for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True)):
+                        for attribute in ['displaySubdComps', 'smoothLevel', 'useSmoothPreviewForRender', 'renderSmoothLevel']:
+                            try :cmds.setAttr(f"{shape}.{attribute}", 1)
+                            except: pass
+                        if cmds.getAttr(f"{shape}.displaySmoothMesh") != 0 and node not in is_smoothed: 
+                            is_smoothed.append(node)
         return is_smoothed
         
     def smooth_mesh_preview_fix(self, verbose=None, method='scene') -> list:
@@ -828,10 +828,6 @@ class Objects():
                     if not prog.update(f"Fix Smoothed Meshs: {node}"): return None
                     for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True)):
                         cmds.setAttr(f"{shape}.displaySmoothMesh", 0)
-                        cmds.setAttr(f"{shape}.displaySubdComps", 1)
-                        cmds.setAttr(f"{shape}.smoothLevel", 1)
-                        cmds.setAttr(f"{shape}.useSmoothPreviewForRender", 1)
-                        cmds.setAttr(f"{shape}.renderSmoothLevel", 1)
         return self.smooth_mesh_preview_get(verbose=None, method=method)
     
     
