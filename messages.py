@@ -62,3 +62,19 @@ def question(title='Question', buttons=[], message_text=None, informative_text=N
 def prompt(title='Prompt', label="", text=""):
     text, validated = QtWidgets.QInputDialog.getText(None, title, label, QtWidgets.QLineEdit.Normal, text)
     return text if validated else None
+    
+def choices(title='Choice', label="", options=[]):
+    text, validated = QtWidgets.QInputDialog.getItem(None, title, label, options)
+    return text if validated else None
+    
+def integer(title='Integer', label="", default_value=1, min_value=0, max_value=10, step=1):
+    value, validated = QtWidgets.QInputDialog.getInt(None, title, label, default_value, min_value, max_value, step)
+    return value if validated else None
+
+def double(title='Double', label="", default_value=1.5, min_value=0, max_value=10, step=0.5):
+    value, validated = QtWidgets.QInputDialog.getDouble(None, title, label, default_value, min_value, max_value, step)
+    return value if validated else None    
+    
+def color(title='Color', label="", default_color=[1,0,0]):
+    color = QtWidgets.QColorDialog.getColor()
+    return color if color else None

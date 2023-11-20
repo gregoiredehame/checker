@@ -27,7 +27,7 @@ class CheckerManager(MayaQWidgetDockableMixin, QtWidgets.QWidget):
                 //
     """
     title = "Model Checker"
-    version = 0.1
+    version = "0.2.1"
     studio = 'Floating Rock'
     
     def __init__(self, parent=None):

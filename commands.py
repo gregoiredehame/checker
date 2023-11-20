@@ -360,6 +360,20 @@ class Objects():
                          backCullVertex=True, gl=True)
                              
         return []    
+    
+    
+    # -------------  
+    @tag('checked')     
+    def intermediate_objects_get(self, verbose=None, method='scene') -> list:
+        intermediate_objects = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Intermediate Objects: {node}"): return None
+                    for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True, fullPath=True)):
+                        if cmds.ls(shape, intermediateObjects=True) and node not in intermediate_objects: intermediate_objects.append(node)  
+        return intermediate_objects
         
         
     # -------------           
@@ -384,11 +398,36 @@ class Objects():
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix Unfrozen Transformations: {node}"): return None
                     [cmds.setAttr(f"{node}.{attr}", lock=False) for attr in ['tx','ty','tz','rx','ry','rz','sx','sy','sz']]
-                    cmds.makeIdentity(f"{node}", apply=True, translate=True, rotate=True, scale=True, normal=False)   
+                    cmds.makeIdentity(f"{node}", apply=True, translate=True, rotate=True, scale=True, normal=False)  
+                    cmds.delete(node, constructionHistory=True) 
         return self.freeze_transformations_get(verbose=None, method=method)
     
     
     # -------------  
+    @tag('checked') 
+    def world_pivot_get(self, verbose=None, method='scene') -> list:
+        uncentered_pivot = []
+        nodes = utils.mesh_array(method) + utils.transform_array()
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Pivot Point: {node}"): return None
+                    for attr in ['rpx','rpy','rpz','spx','spy','spz']:
+                        if cmds.getAttr(f"{node}.{attr}") != 0:
+                            if node not in uncentered_pivot: uncentered_pivot.append(node)
+        return uncentered_pivot
+        
+    def world_pivot_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.world_pivot_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Pivot Point: {node}"): return None
+                    for attr in ['rpx','rpy','rpz','spx','spy','spz']:
+                        cmds.setAttr(f"{node}.{attr}", 0, lock=False) 
+        return self.world_pivot_get(verbose=None, method=method)  
+        
+          
     @tag('checked')   
     # -------------           
     def locked_transformations_get(self, verbose=None, method='scene') -> list:
@@ -479,31 +518,6 @@ class Objects():
         return self.vertex_transforms_get(verbose=None, method=method)
 
 
-    # -------------  
-    @tag('checked') 
-    def world_pivot_get(self, verbose=None, method='scene') -> list:
-        uncentered_pivot = []
-        nodes = utils.mesh_array(method) + utils.transform_array()
-        if nodes:
-            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
-                for i, node in enumerate(nodes):
-                    if not prog.update(f"Get Pivot Point: {node}"): return None
-                    for attr in ['rpx','rpy','rpz','spx','spy','spz']:
-                        if cmds.getAttr(f"{node}.{attr}") != 0:
-                            if node not in uncentered_pivot: uncentered_pivot.append(node)
-        return uncentered_pivot
-        
-    def world_pivot_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.world_pivot_get(verbose=None, method=method)
-        if nodes:
-            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
-                for i, node in enumerate(nodes):
-                    if not prog.update(f"Fix Pivot Point: {node}"): return None
-                    for attr in ['rpx','rpy','rpz','spx','spy','spz']:
-                        cmds.setAttr(f"{node}.{attr}", 0, lock=False) 
-        return self.world_pivot_get(verbose=None, method=method)
-        
-        
     # -------------  
     @tag('checked')    
     def duplicated_names_get(self, verbose=None, method='scene') -> list:
@@ -667,12 +681,8 @@ class Objects():
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Get Constraints: {node}"): return None
                     try:
-                        for attribute in utils.noneAsList([attr.split('.')[-1] for attr in cmds.listAnimatable(node)]):
-                            try:
-                                for connection in utils.noneAsList(cmds.listConnections(f"{node}.{attribute}", s=1)):
-                                    if cmds.nodeType(connection) in constraints_nodes and connection not in constraints:
-                                        constraints.append(connection)
-                            except: pass    
+                        for constraint in utils.noneAsList(cmds.listConnections(node, type="constraint")):
+                            if constraint not in constraints: constraints.append(constraint)      
                     except: pass
         return constraints
         
@@ -728,17 +738,12 @@ class Objects():
         animation_curves = []
         nodes = utils.mesh_array(method) + utils.transform_array(method)
         if nodes:
-            animation_curves_nodes = ['animCurveTL', 'animCurveTA', 'animCurveTT', 'animCurveTU', 'animCurveUL', 'animCurveUA', 'animCurveUT', 'animCurveUU']
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Get Animation Curves: {node}"): return None
                     try:
-                        for attribute in utils.noneAsList([attr.split('.')[-1] for attr in cmds.listAnimatable(node)]):
-                            try:
-                                for connection in utils.noneAsList(cmds.listConnections(f"{node}.{attribute}", s=1)):
-                                    if cmds.nodeType(connection) in animation_curves_nodes and connection not in animation_curves:
-                                        animation_curves.append(connection)
-                            except: pass            
+                        for anim_curve in utils.noneAsList(cmds.listConnections(node, type="animCurve")):
+                            if anim_curve not in animation_curves_nodes: animation_curves_nodes.append(anim_curve)       
                     except: pass
         return animation_curves
         
@@ -808,8 +813,11 @@ class Objects():
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Get Smoothed Meshs: {node}"): return None
                     for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True, fullPath=True)):
-                        if cmds.getAttr(f"{shape}.displaySmoothMesh") != 0 and node not in is_smoothed:
-                            is_smoothed.append(node)
+                        if cmds.getAttr(f"{shape}.displaySmoothMesh")         != 0 and node not in is_smoothed: is_smoothed.append(node)
+                        if cmds.getAttr(f"{shape}.displaySubdComps")          != 1 and node not in is_smoothed: is_smoothed.append(node)
+                        if cmds.getAttr(f"{shape}.smoothLevel")               != 1 and node not in is_smoothed: is_smoothed.append(node)
+                        if cmds.getAttr(f"{shape}.useSmoothPreviewForRender") != 1 and node not in is_smoothed: is_smoothed.append(node)
+                        if cmds.getAttr(f"{shape}.renderSmoothLevel")         != 1 and node not in is_smoothed: is_smoothed.append(node)
         return is_smoothed
         
     def smooth_mesh_preview_fix(self, verbose=None, method='scene') -> list:
@@ -820,9 +828,45 @@ class Objects():
                     if not prog.update(f"Fix Smoothed Meshs: {node}"): return None
                     for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True)):
                         cmds.setAttr(f"{shape}.displaySmoothMesh", 0)
+                        cmds.setAttr(f"{shape}.displaySubdComps", 1)
+                        cmds.setAttr(f"{shape}.smoothLevel", 1)
+                        cmds.setAttr(f"{shape}.useSmoothPreviewForRender", 1)
+                        cmds.setAttr(f"{shape}.renderSmoothLevel", 1)
         return self.smooth_mesh_preview_get(verbose=None, method=method)
     
     
+    # -------------  
+    @tag('checked')     
+    def smooth_mesh_preview_get(self, verbose=None, method='scene') -> list:
+        is_smoothed = []
+        nodes = utils.mesh_array(method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Smoothed Meshs: {node}"): return None
+                    for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True, fullPath=True)):
+                        if cmds.getAttr(f"{shape}.displaySmoothMesh")         != 0 and node not in is_smoothed: is_smoothed.append(node)
+                        if cmds.getAttr(f"{shape}.displaySubdComps")          != 1 and node not in is_smoothed: is_smoothed.append(node)
+                        if cmds.getAttr(f"{shape}.smoothLevel")               != 1 and node not in is_smoothed: is_smoothed.append(node)
+                        if cmds.getAttr(f"{shape}.useSmoothPreviewForRender") != 1 and node not in is_smoothed: is_smoothed.append(node)
+                        if cmds.getAttr(f"{shape}.renderSmoothLevel")         != 1 and node not in is_smoothed: is_smoothed.append(node)
+        return is_smoothed
+        
+    def smooth_mesh_preview_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.smooth_mesh_preview_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Smoothed Meshs: {node}"): return None
+                    for shape in utils.noneAsList(cmds.listRelatives(node, shapes=True)):
+                        cmds.setAttr(f"{shape}.displaySmoothMesh", 0)
+                        cmds.setAttr(f"{shape}.displaySubdComps", 1)
+                        cmds.setAttr(f"{shape}.smoothLevel", 1)
+                        cmds.setAttr(f"{shape}.useSmoothPreviewForRender", 1)
+                        cmds.setAttr(f"{shape}.renderSmoothLevel", 1)
+        return self.smooth_mesh_preview_get(verbose=None, method=method)
+        
+        
     # -------------
     @tag('checked')     
     def floating_rock_model_tag_get(self, verbose=None, method='scene') -> list:
