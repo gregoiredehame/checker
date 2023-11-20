@@ -26,4 +26,4 @@ launcher.tool_checker()
 ![checker](https://github.com/gregoiredehame/checker/assets/74637340/07a8bf33-644d-4ff7-8027-ff84517c12a3)
 
 
-checker is developed and maintained by Gregoire Dehame.
+checker is developed and maintained by Gregoire Dehame for Floating Rock.
