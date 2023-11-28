@@ -214,7 +214,7 @@ class Scene():
                     try:
                         cmds.lockNode(node, lock=False)
                         cmds.delete(node)
-                    except: logger.info('- unable to remove "%s".'%layer)
+                    except: logger.info('- unable to remove "%s".'%node)
         return self.animation_layers_get(verbose=None,  method=method)
       
         
@@ -239,7 +239,7 @@ class Scene():
                     try:
                         cmds.lockNode(node, lock=False)
                         cmds.delete(node)
-                    except: logger.info('- unable to remove "%s".'%layer)
+                    except: logger.info('- unable to remove "%s".'%node)
         return self.display_layers_get(verbose=None,  method=method)
     
         
@@ -264,7 +264,7 @@ class Scene():
                     try:
                         cmds.lockNode(node, lock=False)
                         cmds.delete(node)
-                    except: logger.info('- unable to remove "%s".'%layer)
+                    except: logger.info('- unable to remove "%s".'%node)
         return self.render_layers_get(verbose=None,  method=method)
     
     
@@ -277,7 +277,7 @@ class Scene():
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Get Script Nodes: {node}"): return None
-                    if node not in script_nodes: script_nodes.append(node)
+                    if node not in script_nodes and  node not in ['sceneConfigurationScriptNode','uiConfigurationScriptNode']: script_nodes.append(node)
         return script_nodes
         
     def script_nodes_fix(self, verbose=None, method='scene') -> list:
@@ -400,6 +400,60 @@ class Scene():
                     except:
                         logger.info('- unable to remove "%s".'%node) 
         return self.cache_nodes_get(verbose=None, method=method)     
+    
+    
+    # -------------     
+    @tag('checked')    
+    def dag_nodes_get(self, verbose=None, method='scene') -> list:
+        dag_nodes = []
+        nodes = [node_type for node_type in cmds.allNodeTypes() if node_type in ['dagContainer','dagNode']]
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Dag Nodes: {node}"): return None
+                    for node in utils.noneAsList(cmds.ls(type=node)):
+                        if node not in dag_nodes:
+                            dag_nodes.append(node)
+        return dag_nodes
+        
+    def dag_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.dag_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Dag Nodes: {node}"): return None
+                    try: 
+                        cmds.lockNode(node, lock=False)
+                        cmds.delete(node)
+                    except:
+                        logger.info('- unable to remove "%s".'%node) 
+        return self.dag_nodes_get(verbose=None, method=method)  
+    
+    
+    # -------------     
+    @tag('checked')    
+    def hypershade_nodes_get(self, verbose=None, method='scene') -> list:
+        hypershade_nodes = []
+        nodes = cmds.ls('*hyperShade*')
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Hypershade Nodes: {node}"): return None
+                    if node not in hypershade_nodes: hypershade_nodes.append(node)
+        return hypershade_nodes
+        
+    def hypershade_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.hypershade_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Hypershade Nodes: {node}"): return None
+                    try: 
+                        cmds.lockNode(node, lock=False)
+                        cmds.delete(node)
+                    except:
+                        logger.info('- unable to remove "%s".'%node) 
+        return self.hypershade_nodes_get(verbose=None, method=method)            
     
     
     # -------------    
