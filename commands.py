@@ -287,7 +287,7 @@ class Scene():
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix Script Nodes: {node}"): return None
                     try: 
-                        cmds.lockNode(lock=False)
+                        cmds.lockNode(node, lock=False)
                         cmds.delete(node)
                     except:
                         logger.info('- unable to remove "%s".'%node) 
@@ -313,7 +313,7 @@ class Scene():
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix Expression Nodes: {node}"): return None
                     try: 
-                        cmds.lockNode(lock=False)
+                        cmds.lockNode(node, lock=False)
                         cmds.delete(node)
                     except:
                         logger.info('- unable to remove "%s".'%node) 
