@@ -71,6 +71,7 @@ class Scene():
                         except: logger.info('- unable to remove "%s".'%node)
         return self.references_get(verbose=None, method=method)  
         
+        
     # -------------    
     @tag('checked')    
     def namespaces_get(self, verbose=None, method='scene') -> list:
@@ -265,6 +266,196 @@ class Scene():
                         cmds.delete(node)
                     except: logger.info('- unable to remove "%s".'%layer)
         return self.render_layers_get(verbose=None,  method=method)
+    
+    
+    # -------------     
+    @tag('checked')    
+    def script_nodes_get(self, verbose=None, method='scene') -> list:
+        script_nodes = []
+        nodes = utils.noneAsList(cmds.ls(type='script'))
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Script Nodes: {node}"): return None
+                    if node not in script_nodes: script_nodes.append(node)
+        return script_nodes
+        
+    def script_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.script_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Script Nodes: {node}"): return None
+                    try: 
+                        cmds.lockNode(lock=False)
+                        cmds.delete(node)
+                    except:
+                        logger.info('- unable to remove "%s".'%node) 
+        return self.script_nodes_get(verbose=None, method=method)
+     
+        
+    # -------------         
+    @tag('checked')    
+    def expression_nodes_get(self, verbose=None, method='scene') -> list:
+        expression_nodes = []
+        nodes = utils.noneAsList(cmds.ls(type='expression'))
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Expression Nodes: {node}"): return None
+                    if node not in expression_nodes: expression_nodes.append(node)
+        return expression_nodes
+        
+    def expression_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.expression_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Expression Nodes: {node}"): return None
+                    try: 
+                        cmds.lockNode(lock=False)
+                        cmds.delete(node)
+                    except:
+                        logger.info('- unable to remove "%s".'%node) 
+        return self.expression_nodes_get(verbose=None, method=method)  
+    
+    
+    # -------------     
+    @tag('checked')    
+    def light_editor_nodes_get(self, verbose=None, method='scene') -> list:
+        light_editor_nodes = []
+        nodes = utils.noneAsList(cmds.ls(type='lightEditor'))
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Light Editor Nodes: {node}"): return None
+                    if node not in light_editor_nodes: light_editor_nodes.append(node)
+        return light_editor_nodes
+        
+    def light_editor_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.light_editor_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Light Editor Nodes: {node}"): return None
+                    try: 
+                        cmds.lockNode(node, lock=False)
+                        cmds.delete(node)
+                    except:
+                        logger.info('- unable to remove "%s".'%node) 
+        return self.light_editor_nodes_get(verbose=None, method=method)  
+    
+    
+    # -------------     
+    @tag('checked')    
+    def time_editor_nodes_get(self, verbose=None, method='scene') -> list:
+        time_editor_nodes = []
+        nodes = [node_type for node_type in cmds.allNodeTypes() if node_type.startswith("timeEditor")]
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Time Editor Nodes: {node}"): return None
+                    for node in utils.noneAsList(cmds.ls(type=node)):
+                        if node not in time_editor_nodes:
+                            time_editor_nodes.append(node)
+        return time_editor_nodes
+        
+    def time_editor_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.time_editor_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Time Editor Nodes: {node}"): return None
+                    try: 
+                        cmds.lockNode(node, lock=False)
+                        cmds.delete(node)
+                    except:
+                        logger.info('- unable to remove "%s".'%node) 
+        return self.time_editor_nodes_get(verbose=None, method=method)  
+    
+    
+    # -------------     
+    @tag('checked')    
+    def cache_nodes_get(self, verbose=None, method='scene') -> list:
+        cache_nodes = []
+        nodes = [node_type for node_type in cmds.allNodeTypes() if node_type in ['cacheBlend','cacheFile']]
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Cache Nodes: {node}"): return None
+                    for node in utils.noneAsList(cmds.ls(type=node)):
+                        if node not in cache_nodes:
+                            cache_nodes.append(node)
+        return cache_nodes
+        
+    def cache_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.cache_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Cache Nodes: {node}"): return None
+                    try: 
+                        cmds.lockNode(node, lock=False)
+                        cmds.delete(node)
+                    except:
+                        logger.info('- unable to remove "%s".'%node) 
+        return self.cache_nodes_get(verbose=None, method=method)     
+    
+    
+    # -------------    
+    @tag('checked')    
+    def poly_nodes_get(self, verbose=None, method='scene') -> list:
+        poly_nodes = []
+        nodes = [node_type for node_type in cmds.allNodeTypes() if node_type.startswith("poly")]
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Poly Nodes: {node}"): return None
+                    for poly in utils.noneAsList(cmds.ls(type=node)):
+                        if poly not in poly_nodes:
+                            poly_nodes.append(poly)
+        return poly_nodes
+        
+    def poly_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.poly_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Poly Nodes: {node}"): return None
+                    try: cmds.delete(node)
+                    except:logger.info('- unable to remove "%s".'%node) 
+        return self.poly_nodes_get(verbose=None, method=method)
+        
+        
+    # -------------     
+    @tag('checked')    
+    def cameras_get(self, verbose=None, method='scene') -> list:
+        cameras_nodes = []
+        nodes = utils.noneAsList(cmds.ls(type='camera'))
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Cameras: {node}"): return None
+                    if node not in ['frontShape', 'perspShape', 'sideShape', 'topShape']:
+                        try:
+                            transform = cmds.listRelatives(node, parent=True)[0]
+                            if transform not in cameras_nodes: cameras_nodes.append(transform)
+                        except:
+                            if node not in cameras_nodes: cameras_nodes.append(node)
+        return cameras_nodes
+        
+    def cameras_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.cameras_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Cameras: {node}"): return None
+                    try: 
+                        cmds.lockNode(node, lock=False)
+                        cmds.delete(node)
+                    except:
+                        logger.info('- unable to remove "%s".'%node) 
+        return self.cameras_get(verbose=None, method=method)            
      
         
     # -------------     
@@ -317,31 +508,6 @@ class Objects():
                     if not prog.update(f"Fix Contruction History: {node}"): return None
                     cmds.delete(node, constructionHistory=True)
         return self.contruction_history_get(verbose=None, method=method)
-    
-    
-    # -------------    
-    @tag('checked')    
-    def poly_nodes_get(self, verbose=None, method='scene') -> list:
-        poly_nodes = []
-        nodes = [node_type for node_type in cmds.allNodeTypes() if node_type.startswith("poly")]
-        if nodes:
-            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
-                for i, node in enumerate(nodes):
-                    if not prog.update(f"Get Poly Nodes: {node}"): return None
-                    for poly in utils.noneAsList(cmds.ls(type=node)):
-                        if poly not in poly_nodes:
-                            poly_nodes.append(poly)
-        return poly_nodes
-        
-    def poly_nodes_fix(self, verbose=None, method='scene') -> list:
-        nodes = self.poly_nodes_get(verbose=None, method=method)
-        if nodes:
-            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
-                for i, node in enumerate(nodes):
-                    if not prog.update(f"Fix Poly Nodes: {node}"): return None
-                    try: cmds.delete(node)
-                    except:logger.info('- unable to remove "%s".'%node) 
-        return self.poly_nodes_get(verbose=None, method=method)
     
     
     # -------------  
@@ -1416,4 +1582,4 @@ class Shaders():
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix Non Shader Assigned Meshs: {node}"): return None
                     cmds.sets(f'{node}', edit=True, forceElement='initialShadingGroup')
-        return self.non_shaders_assigned_get(verbose=None, method=method)    
+        return self.non_shaders_assigned_get(verbose=None, method=method)  
