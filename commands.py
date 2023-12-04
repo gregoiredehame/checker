@@ -64,8 +64,7 @@ class Scene():
                     if not prog.update(f"Fix References: {node}"): return None
                     try: cmds.lockNode(node, lock=False)
                     except: pass
-                    try: 
-                        cmds.file(referenceNode=node, removeReference=True)
+                    try: cmds.file(referenceNode=node, removeReference=True)
                     except: 
                         try: cmds.delete(node)
                         except: logger.info('- unable to remove "%s".'%node)
@@ -476,9 +475,37 @@ class Scene():
             with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Fix Poly Nodes: {node}"): return None
+                    try: cmds.lockNode(node, lock=False)
+                    except: pass
                     try: cmds.delete(node)
                     except:logger.info('- unable to remove "%s".'%node) 
         return self.poly_nodes_get(verbose=None, method=method)
+    
+    
+    # -------------    
+    @tag('checked')    
+    def xgen_nodes_get(self, verbose=None, method='scene') -> list:
+        xgen_nodes = []
+        nodes = [node_type for node_type in cmds.allNodeTypes() if node_type.startswith("xgm")]
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get XGen Nodes: {node}"): return None
+                    for poly in utils.noneAsList(cmds.ls(type=node)):
+                        if poly not in poly_nodes: poly_nodes.append(poly)
+        return poly_nodes
+        
+    def xgen_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.xgen_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix XGen Nodes: {node}"): return None
+                    try: cmds.lockNode(node, lock=False)
+                    except: pass
+                    try: cmds.delete(node)
+                    except:logger.info('- unable to remove "%s".'%node) 
+        return self.xgen_nodes_get(verbose=None, method=method)    
         
         
     # -------------     
@@ -510,23 +537,7 @@ class Scene():
                     except:
                         logger.info('- unable to remove "%s".'%node) 
         return self.cameras_get(verbose=None, method=method)            
-     
-        
-    # -------------     
-    #@tag('checked')
-    #def sets_get(self, verbose=None, method='scene') -> list:
-    #    sets = []
-    #    for set in utils.noneAsList(cmds.ls(typ='objectSet')):
-    #        [sets.append(set) if set not in ['defaultLightSet', 'defaultObjectSet', 'initialParticleSE', 'initialShadingGroup'] else None]
-    #    return sets
-    #    
-    #def sets_fix(self, verbose=None, method='scene') -> list:
-    #    for set in self.sets_get(verbose=None,  method=method):
-    #        try:
-    #            cmds.lockNode(set, lock=False)
-    #            cmds.delete(set)
-    #        except: logger.info('- unable to remove "%s".'%set) 
-    #    return self.sets_get(verbose=None,  method=method)
+
 
 
 class Objects():
