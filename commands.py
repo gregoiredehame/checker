@@ -492,8 +492,8 @@ class Scene():
                 for i, node in enumerate(nodes):
                     if not prog.update(f"Get XGen Nodes: {node}"): return None
                     for poly in utils.noneAsList(cmds.ls(type=node)):
-                        if poly not in poly_nodes: poly_nodes.append(poly)
-        return poly_nodes
+                        if poly not in xgen_nodes: xgen_nodes.append(poly)
+        return xgen_nodes
         
     def xgen_nodes_fix(self, verbose=None, method='scene') -> list:
         nodes = self.xgen_nodes_get(verbose=None, method=method)
@@ -506,6 +506,31 @@ class Scene():
                     try: cmds.delete(node)
                     except:logger.info('- unable to remove "%s".'%node) 
         return self.xgen_nodes_get(verbose=None, method=method)    
+        
+        
+    # -------------    
+    @tag('checked')    
+    def turtle_nodes_get(self, verbose=None, method='scene') -> list:
+        turtle_nodes = []
+        nodes = cmds.ls(type='ilrBakeLayer')
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Get Turtle Nodes: {node}"): return None
+                    if node not in turtle_nodes: turtle_nodes.append(node)
+        return turtle_nodes
+        
+    def turtle_nodes_fix(self, verbose=None, method='scene') -> list:
+        nodes = self.turtle_nodes_get(verbose=None, method=method)
+        if nodes:
+            with progress.ProgressWindow(len(nodes), enable=verbose if not cmds.about(batch=True) else None , title="Mesh Checker") as prog:
+                for i, node in enumerate(nodes):
+                    if not prog.update(f"Fix Turtle Nodes: {node}"): return None
+                    try: cmds.lockNode(node, lock=False)
+                    except: pass
+                    try: cmds.delete(node)
+                    except:logger.info('- unable to remove "%s".'%node) 
+        return self.turtle_nodes_get(verbose=None, method=method)        
         
         
     # -------------     
